@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # tg.sh -- test suite generation script
-# This is a bash script for generating test suites from a testfile containing alternating inputs and outputs separated by empty lines.
+# This is a bash script for generating test suites from a testfile (default: tests.txt) containing alternating inputs and outputs separated by empty lines.
 # This script generates .in and .out files (default formats: t[NUMBER].in | t[NUMBER].out) and a suite file (default: suite.txt) containing the names of all the tests generated (e.g. t1, t2, t3, etc.).
 # The generated files are put in a target directory relative to the current directory (default: tests)
 # WARNING: The target directory is cleared on each run of this script, so make sure to specify a directory specifically for containing tests.
@@ -68,6 +68,7 @@ while test $# -gt 0; do
 done
 
 # READ IN TESTFILE
+# This section borrows code from the answer to the Stack Overflow question here: http://stackoverflow.com/questions/18539369/split-text-file-into-array-based-on-an-empty-line-or-any-non-used-character
 i=0
 s=1
 declare -a tests
