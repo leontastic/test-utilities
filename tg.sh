@@ -92,7 +92,10 @@ done < ${TESTFILE}
 if [ ! -d "$TESTDIR" ]; then
   mkdir "$TESTDIR"
 else
-  rm -rfv "${TESTDIR}/*"
+  printf "Clearing files in target directory... "
+  rm "${TESTDIR}"/*
+  echo "Target directory cleared."
+  echo
 fi
 
 # GENERATE TESTS
