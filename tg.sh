@@ -128,7 +128,7 @@ done
 
 if [ $ZIP == 1 ]; then
   echo "Zipping files in ${TESTDIR}/${ZIPNAME}..."
-  zip ${TESTDIR}/${ZIPNAME} ${TESTDIR}/* && echo "Successfully zipped files." || echo "File zipping failed."
+  cd ${TESTDIR} && zip ${ZIPNAME} * && cd .. && echo "Successfully zipped files." || echo "File zipping failed."
   echo
 fi
 
