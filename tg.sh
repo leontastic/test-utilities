@@ -84,6 +84,9 @@ i=0
 s=1
 declare -a tests
 
+KEY=$RANDOM
+sed '/^ *#/ d' < ${TESTFILE} > /tmp/tmp-$KEY.txt
+
 while read -r line; do
   # If we find an empty line, then we increase the counter (i), 
   # set the flag (s) to one, and skip to the next line
@@ -98,7 +101,9 @@ while read -r line; do
     tests[$i]="$line"
     s=0; 
   }
-done < ${TESTFILE}
+done < /tmp/tmp-$KEY.txt
+
+rm /tmp/tmp-$KEY.txt
 
 # CLEAR TARGET DIRECTORY
 if [ ! -d "$TESTDIR" ]; then
