@@ -38,9 +38,45 @@ $ ./ct.sh program.cc singletest.in "--option arg -a b"
 
 ## tg.sh - Test suite generation
 
-This is a bash script for generating test suites from a testfile (default: `tests.txt`) containing alternating inputs and outputs separated by empty lines.
+This is a bash script for generating test suites from a testfile (default: `tests.txt`) containing alternating inputs and outputs separated by empty lines. The example testfile below is for a program that accepts an integer `n` and prints the first `n` terms of the Fibonacci sequence:
 
-This script generates .in and .out files (default formats: `t[NUMBER].in`, `t[NUMBER].out`) and a suite file (default: `suite.txt`) containing the names of all the tests generated (e.g. `t1`, `t2`, `t3`, etc.).
+```
+3
+
+1 1 2
+
+6
+
+1 1 2 3 5 8
+
+10
+
+1 1 2 3 5 8 13 21 34 55
+
+...
+```
+
+Any line that begins with `#` will be ignored by the generator. This allows you to include single-line comments:
+
+```
+# Powers of 2
+4
+
+1 1 2 3
+
+8
+
+1 1 2 3 5 8 13 21
+
+# Powers of 3
+9
+
+1 1 2 3 5 8 13 21 34 55
+
+...
+```
+
+tg.sh generates .in and .out files (default formats: `t[NUMBER].in`, `t[NUMBER].out`) and a suite file (default: `suite.txt`) containing the names of all the tests generated (e.g. `t1`, `t2`, `t3`, etc.).
 
 The generated files are put in a target directory relative to the current directory (default: `tests`).
 
