@@ -44,7 +44,7 @@ while test $# -gt 0; do
     -s|--suitefile)
       shift
       if test $# -gt 0; then
-        SUITENAME=$1
+        SUITEFILE=$1
       else
         echo "no suitefile specified"
         exit 1
