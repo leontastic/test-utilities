@@ -85,6 +85,14 @@ $ ./tg.sh --suitefile suiteq1.txt
 # Generated suitefile will named suiteq1.txt instead of suite.txt
 ```
 
+#### Zip your test suite
+```bash
+$ ./tg.sh --zip a3q1a
+
+# All generated test suite files will be zipped in file target/a3q1a.zip
+# If no name is specified, the files will be zipped in target/tests.zip
+```
+
 ### Attributions
 
 #### that other guy

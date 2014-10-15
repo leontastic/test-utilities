@@ -11,6 +11,7 @@
 # [-t|--testfile=NAME] sets the name of the test, where the tests will be listed (default: "tests.txt")
 # [-s|--suitefile=NAME] sets the name of the suitefile, which lists the name of the tests generated and which will be used by the submission tester (default: "suite.txt")
 # [--target=TARGET] sets the relative target directory, where the tests and suitefile will be stored
+# [--zip{=ZIPFILE}] zips all generated test suite files in target/tests.zip; the name of the zip file can be specified
 
 # DEFAULTS
 TESTDIR='tests'
