@@ -18,7 +18,7 @@ PATTERN='t'
 TESTFILE='tests.txt'
 SUITEFILE='suite.txt'
 ZIP=0
-ZIPNAME='tests'
+ZIPNAME='tests.zip'
 
 # OPTIONS
 while test $# -gt 0; do
@@ -126,8 +126,8 @@ for i in "${!tests[@]}"; do
 done
 
 if [ $ZIP == 1 ]; then
-  echo "Zipping files in ${TESTDIR}/${ZIPNAME}.zip..."
-  zip ${TESTDIR}/${ZIPNAME}.zip ${TESTDIR}/* && echo "Successfully zipped files." || echo "File zipping failed."
+  echo "Zipping files in ${TESTDIR}/${ZIPNAME}..."
+  zip ${TESTDIR}/${ZIPNAME} ${TESTDIR}/* && echo "Successfully zipped files." || echo "File zipping failed."
   echo
 fi
 
