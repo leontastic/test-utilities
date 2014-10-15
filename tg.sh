@@ -17,6 +17,8 @@ TESTDIR='tests'
 PATTERN='t'
 TESTFILE='tests.txt'
 SUITEFILE='suite.txt'
+ZIP=0
+ZIPNAME='tests'
 
 # OPTIONS
 while test $# -gt 0; do
@@ -59,6 +61,14 @@ while test $# -gt 0; do
         echo "no target specified"
         exit 1
       fi
+      shift
+      ;;
+    --zip)
+      shift
+      if test $# -gt 0; then
+        ZIPNAME=$1
+      fi
+      ZIP=1
       shift
       ;;
     *)
@@ -114,6 +124,12 @@ for i in "${!tests[@]}"; do
     echo
   fi
 done
+
+if [ $ZIP == 1 ]; then
+  echo "Zipping files in ${TESTDIR}/${ZIPNAME}.zip..."
+  zip ${TESTDIR}/${ZIPNAME}.zip ${TESTDIR}/* && echo "Successfully zipped files." || echo "File zipping failed."
+  echo
+fi
 
 [ "$count" == 1 ] && printf "1 test generated" || printf "$count tests generated"
 echo " in directory '$TESTDIR' (suitefile: $SUITEFILE)."
