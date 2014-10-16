@@ -90,17 +90,24 @@ sed '/^ *#/ d' < ${TESTFILE} > /tmp/tmp-$KEY.txt
 while read -r line; do
   # If we find an empty line, then we increase the counter (i), 
   # set the flag (s) to one, and skip to the next line
-  [[ $line == "" ]] && ((i++)) && s=1 && continue
+  if [[ $line == "" ]]; then
+    ((i++))
+    s=1
+    continue
+  fi
 
   # If the flag (s) is zero, then we are not in a new line of the block
   # so we set the value of the array to be the previous value concatenated
   # with the current line
-  [[ $s == 0 ]] && tests[$i]="${tests[$i]}"$'\n'"$line" || { 
+  if [[ $s == 0 ]]; then
+    echo "New line in block $i: $line"
+    tests[$i]="${tests[$i]}"$'\n'"$line"
+  else
     # Otherwise we are in the first line of the block, so we set the value
     # of the array to the current line, and then we reset the flag (s) to zero 
     tests[$i]="$line"
-    s=0; 
-  }
+    s=0
+  fi
 done < /tmp/tmp-$KEY.txt
 
 rm /tmp/tmp-$KEY.txt
