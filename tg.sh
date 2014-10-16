@@ -120,11 +120,11 @@ count=0
 for i in "${!tests[@]}"; do
   if ! (($i % 2)); then
     echo "Test $((i / 2)):" # Output for verifying test generation
-    echo ${tests[$i]} > "${TESTDIR}/${PATTERN}$(( $i / 2 )).in" # Generate .in file
+    echo "${tests[$i]}" > "${TESTDIR}/${PATTERN}$(( $i / 2 )).in" # Generate .in file
     echo "${PATTERN}$(( $i / 2 ))" >> "${TESTDIR}/${SUITEFILE}" # Record test in suitefile
     cat "${TESTDIR}/${PATTERN}$(( $i / 2 )).in" # Print the test input
   else
-    echo ${tests[$i]} > "${TESTDIR}/${PATTERN}$((($i - 1) / 2)).out" # Generate the .out file
+    echo "${tests[$i]}" > "${TESTDIR}/${PATTERN}$((($i - 1) / 2)).out" # Generate the .out file
     ((count++))
     cat "${TESTDIR}/${PATTERN}$((($i - 1) / 2)).out" # Print the test output
     echo
