@@ -97,10 +97,11 @@ while read -r line; do
   fi
 
   if [[ $line == "\~" ]]; then
-    # If the line is exactly "\~" then insert a newline into the current test
+    # If the line is exactly "\~" and we're inside a block then insert an empty line into the current test
     if [[ $s == 0 ]]; then
       tests[$i]="${tests[$i]}"$'\n'
     else
+      # If the first line of a block is "\~", we skip processing this line since the next line will add a newline for us
       s=0
     fi
     continue
