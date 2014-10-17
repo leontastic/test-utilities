@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # tg.sh -- test suite generation script
-# This is a bash script for generating test suites from a testfile (default: tests.txt) containing alternating inputs and outputs separated by empty lines.
+# This is a bash script for generating test suites from a testfile (default: tests.txt) containing blocks separated by empty lines and containing mixed lines of input and outputs, where outputs are represented by lines beginning with a single right angle bracket `>`.
 # This script generates .in and .out files (default formats: t[NUMBER].in | t[NUMBER].out) and a suite file (default: suite.txt) containing the names of all the tests generated (e.g. t1, t2, t3, etc.).
 # The generated files are put in a target directory relative to the current directory (default: tests)
 # WARNING: The target directory is cleared on each run of this script, so make sure to specify a directory specifically for containing tests.
@@ -18,6 +18,8 @@ TESTDIR='tests'
 PATTERN='t'
 TESTFILE='tests.txt'
 SUITEFILE='suite.txt'
+AUXFILE='aux.txt'
+AUXPATTERN='x'
 ZIP=0
 ZIPNAME='tests.zip'
 
@@ -50,6 +52,16 @@ while test $# -gt 0; do
         SUITEFILE=$1
       else
         echo "no suitefile specified"
+        exit 1
+      fi
+      shift
+      ;;
+    -a|--auxfile)
+      shift
+      if test $# -gt 0; then
+        AUXFILE=$1
+      else
+        echo "no auxfile specified"
         exit 1
       fi
       shift
@@ -88,11 +100,11 @@ blocktype=0 # if (blocktype == 0), we are currently adding to an input file; oth
 declare -a inputs
 declare -a outputs
 
-KEY=$RANDOM
+TESTSKEY=$RANDOM
 
 # Before processing testfile, remove all lines beginning with '#'
 # There can be spaces before '#'
-sed '/^ *#/ d' < ${TESTFILE} > /tmp/tmp-$KEY.txt
+sed '/^ *#/ d' < ${TESTFILE} > /tmp/tmp-$TESTSKEY.txt
 
 while read -r line; do
 
@@ -153,9 +165,53 @@ while read -r line; do
     fi
 
   fi
-done < /tmp/tmp-$KEY.txt
+done < /tmp/tmp-$TESTSKEY.txt
 
-rm /tmp/tmp-$KEY.txt
+rm /tmp/tmp-$TESTSKEY.txt
+
+# READ IN AUXFILE
+auxblock=0 # index of the current block
+x=1 # if (s == 1), then we are in the first line of a block (inputs)
+
+declare -a aux
+
+if [ -e ${AUXFILE} ]; then
+
+  AUXKEY=$RANDOM
+
+  sed '/^ *#/ d' < ${AUXFILE} > /tmp/tmp-$AUXKEY.txt
+
+  while read -r line; do
+
+    # If we find an empty line, then we increment the block index
+    # Set the flag (s) to 1, then skip to the next line
+    if [[ $line == "" ]]; then
+      ((auxblock++))
+      x=1
+      continue
+    fi
+
+    # Handle auxiliary files
+    if [ $x == 0 ]; then
+      # If the line is exactly "\~" and we're inside a block then insert an empty line into the current test
+      if [ "$line" == "\~" ]; then
+        aux[$auxblock]="${aux[$auxblock]}"$'\n'
+      else
+        aux[$auxblock]="${aux[$auxblock]}"$'\n'"$line"
+      fi
+    else
+      # If the first line of a block is "\~", we skip processing empty lines since the next line will add a newline for us
+      if [ "$line" != "\~" ]; then
+        aux[$auxblock]="$line"
+      fi
+      s=0
+    fi
+
+  done < /tmp/tmp-$AUXKEY.txt
+
+  rm /tmp/tmp-$AUXKEY.txt
+
+fi
 
 # CLEAR TARGET DIRECTORY
 if [ ! -d "$TESTDIR" ]; then
@@ -182,11 +238,26 @@ for i in "${!outputs[@]}"; do
   ((count++))
 done
 
+auxcount=0
+if [ -e ${AUXFILE} ]; then
+  for i in "${!aux[@]}"; do
+    echo "Auxiliary file ${i}:"
+    echo "${aux[$i]}" > "${TESTDIR}/${AUXPATTERN}${i}.txt" # Generate .in file
+    cat "${TESTDIR}/${AUXPATTERN}${i}.txt" # Print the test input
+    echo
+    ((auxcount++))
+  done
+fi
+
 if [ $ZIP == 1 ]; then
   echo "Zipping files in ${TESTDIR}/${ZIPNAME}..."
   cd ${TESTDIR} && zip ${ZIPNAME} * && cd .. && echo "Successfully zipped files." || echo "File zipping failed."
   echo
 fi
 
-[ "$count" == 1 ] && printf "1 test generated" || printf "$count tests generated"
+[ "$count" == 1 ] && printf "1 test" || printf "$count tests"
+if [ "$auxcount" == 1 ]; then
+  [ "$auxcount" == 1 ] && printf " and 1 auxiliary file" || printf " and $auxcount auxiliary files"
+fi
+printf " generated"
 echo " in directory '$TESTDIR' (suitefile: $SUITEFILE)."
