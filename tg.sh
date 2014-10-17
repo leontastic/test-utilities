@@ -80,8 +80,8 @@ done
 
 # READ IN TESTFILE
 # This section borrows code from the answer to the Stack Overflow question here: http://stackoverflow.com/questions/18539369/split-text-file-into-array-based-on-an-empty-line-or-any-non-used-character
-i=0
-s=1
+i=0 # index of the current block
+s=1 # if (s == 1), then we are in the first line of a block
 declare -a tests
 
 KEY=$RANDOM
@@ -96,16 +96,21 @@ while read -r line; do
     continue
   fi
 
+  if [[ $line == "\~" ]]; then
+    # If the line is exactly "\~" then insert a newline into the current test
+    if [[ $s == 0 ]]; then
+      tests[$i]="${tests[$i]}"$'\n'
+    else
+      s=0
+    fi
+    continue
+  fi
+
   # If the flag (s) is zero, then we are not in a new line of the block
   # so we set the value of the array to be the previous value concatenated
   # with the current line
   if [[ $s == 0 ]]; then
-    if [[ $line == "\~" ]]; then
-      # If the line is exactly "\~" then insert a newline into the current test
-      tests[$i]="${tests[$i]}"$'\n'
-    else
-      tests[$i]="${tests[$i]}"$'\n'"$line"
-    fi
+    tests[$i]="${tests[$i]}"$'\n'"$line"
   else
     # Otherwise we are in the first line of the block, so we set the value
     # of the array to the current line, and then we reset the flag (s) to zero 
