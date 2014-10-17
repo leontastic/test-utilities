@@ -100,7 +100,12 @@ while read -r line; do
   # so we set the value of the array to be the previous value concatenated
   # with the current line
   if [[ $s == 0 ]]; then
-    tests[$i]="${tests[$i]}"$'\n'"$line"
+    if [[ $line == "\~" ]]; then
+      # If the line is exactly "\~" then insert a newline into the current test
+      tests[$i]="${tests[$i]}"$'\n'
+    else
+      tests[$i]="${tests[$i]}"$'\n'"$line"
+    fi
   else
     # Otherwise we are in the first line of the block, so we set the value
     # of the array to the current line, and then we reset the flag (s) to zero 
