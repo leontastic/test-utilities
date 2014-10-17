@@ -80,43 +80,78 @@ done
 
 # READ IN TESTFILE
 # This section borrows code from the answer to the Stack Overflow question here: http://stackoverflow.com/questions/18539369/split-text-file-into-array-based-on-an-empty-line-or-any-non-used-character
-i=0 # index of the current block
-s=1 # if (s == 1), then we are in the first line of a block
-declare -a tests
+block=0 # index of the current block
+s=1 # if (s == 1), then we are in the first line of a block (inputs)
+t=1 # if (t == 1), then we are in the first line of a block (outputs)
+blocktype=0 # if (blocktype == 0), we are currently adding to an input file; otherwise add to an output file
+
+declare -a inputs
+declare -a outputs
 
 KEY=$RANDOM
+
+# Before processing testfile, remove all lines beginning with '#'
+# There can be spaces before '#'
 sed '/^ *#/ d' < ${TESTFILE} > /tmp/tmp-$KEY.txt
 
 while read -r line; do
-  # If we find an empty line, then we increase the counter (i), 
-  # set the flag (s) to one, and skip to the next line
+
+  # If we find an empty line, then we increment the block index
+  # Set the flag (s) to 1, then skip to the next line
   if [[ $line == "" ]]; then
-    ((i++))
+    ((block++))
     s=1
+    t=1
     continue
   fi
 
-  if [[ $line == "\~" ]]; then
-    # If the line is exactly "\~" and we're inside a block then insert an empty line into the current test
-    if [[ $s == 0 ]]; then
-      tests[$i]="${tests[$i]}"$'\n'
+  # If the current line begins with '>', switch to outputs; otherwise switch to inputs
+  # There can be no spaces before or after '>'
+  if [[ $line == \>* ]]; then
+    # If line begins with '>', remove the first character
+    line="${line#?}"
+    blocktype=1
+  else
+    blocktype=0
+  fi
+
+  # Handle inputs
+  if (( blocktype == 0 )); then
+
+    if [ $s == 0 ]; then
+      # If the line is exactly "\~" and we're inside a block then insert an empty line into the current test
+      if [ "$line" == "\~" ]; then
+        inputs[$block]="${inputs[$block]}"$'\n'
+      else
+        inputs[$block]="${inputs[$block]}"$'\n'"$line"
+      fi
+
     else
-      # If the first line of a block is "\~", we skip processing this line since the next line will add a newline for us
+      # If the first line of a block is "\~", we skip processing empty lines since the next line will add a newline for us
+      if [ "$line" != "\~" ]; then
+        inputs[$block]="$line"
+      fi
       s=0
     fi
-    continue
-  fi
 
-  # If the flag (s) is zero, then we are not in a new line of the block
-  # so we set the value of the array to be the previous value concatenated
-  # with the current line
-  if [[ $s == 0 ]]; then
-    tests[$i]="${tests[$i]}"$'\n'"$line"
+  # Handle outputs
   else
-    # Otherwise we are in the first line of the block, so we set the value
-    # of the array to the current line, and then we reset the flag (s) to zero 
-    tests[$i]="$line"
-    s=0
+
+    if [ $t == 0 ]; then
+      # If the line is exactly "\~" and we're inside a block then insert an empty line into the current test
+      if [ "$line" == "\~" ]; then
+        outputs[$block]="${outputs[$block]}"$'\n'
+      else
+        outputs[$block]="${outputs[$block]}"$'\n'"$line"
+      fi
+    else
+      # If the first line of a block is "\~", we skip processing empty lines since the next line will add a newline for us
+      if [ "$line" != "\~" ]; then
+        outputs[$block]="$line"
+      fi
+      t=0
+    fi
+
   fi
 done < /tmp/tmp-$KEY.txt
 
@@ -134,20 +169,17 @@ fi
 
 # GENERATE TESTS
 count=0
-for i in "${!tests[@]}"; do
-  if ! (($i % 2)); then
-    echo "Test $((i / 2)) input:" # Output for verifying test generation
-    echo "${tests[$i]}" > "${TESTDIR}/${PATTERN}$(( $i / 2 )).in" # Generate .in file
-    echo "${PATTERN}$(( $i / 2 ))" >> "${TESTDIR}/${SUITEFILE}" # Record test in suitefile
-    cat "${TESTDIR}/${PATTERN}$(( $i / 2 )).in" # Print the test input
-    echo
-  else
-    echo "Test $((i / 2)) output:" # Output for verifying test generation
-    echo "${tests[$i]}" > "${TESTDIR}/${PATTERN}$((($i - 1) / 2)).out" # Generate the .out file
-    ((count++))
-    cat "${TESTDIR}/${PATTERN}$((($i - 1) / 2)).out" # Print the test output
-    echo
-  fi
+for i in "${!outputs[@]}"; do
+  echo "Test ${i} input:"
+  echo "${inputs[$i]}" > "${TESTDIR}/${PATTERN}${i}.in" # Generate .in file
+  echo "${PATTERN}${i}" >> "${TESTDIR}/${SUITEFILE}" # Record test in suitefile
+  cat "${TESTDIR}/${PATTERN}${i}.in" # Print the test input
+  echo
+  echo "Test ${i} output:" # Output for verifying test generation
+  echo "${outputs[$i]}" > "${TESTDIR}/${PATTERN}${i}.out" # Generate the .out file
+  cat "${TESTDIR}/${PATTERN}${i}.out" # Print the test output
+  echo
+  ((count++))
 done
 
 if [ $ZIP == 1 ]; then
