@@ -204,7 +204,7 @@ if [ -e ${AUXFILE} ]; then
       if [ "$line" != "\~" ]; then
         aux[$auxblock]="$line"
       fi
-      s=0
+      x=0
     fi
 
   done < /tmp/tmp-$AUXKEY.txt
