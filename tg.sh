@@ -100,7 +100,6 @@ while read -r line; do
   # so we set the value of the array to be the previous value concatenated
   # with the current line
   if [[ $s == 0 ]]; then
-    echo "New line in block $i: $line"
     tests[$i]="${tests[$i]}"$'\n'"$line"
   else
     # Otherwise we are in the first line of the block, so we set the value
